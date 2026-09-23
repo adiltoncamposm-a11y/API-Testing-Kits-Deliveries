@@ -1,15 +1,2029 @@
-# API Testing Project
+# API Testing Project – Kits & Fast Delivery
 
-Testing APIs using Postman and browser DevTools.
+## Project Overview
 
-## Description
-Tested REST endpoints (GET, POST, PUT, DELETE) to check responses, errors, and returned data. Used Postman for requests and DevTools to inspect network activity.
+This project contains manual API test cases created and executed for two API features:
 
-## Skills
-API Testing, Test Cases, Bug Reporting, Browser DevTools
+* **Kits API** – adding products to kits
+* **Fast Delivery API** – delivery cost and delivery-time calculation
 
-## Tools
-Postman, Browser DevTools, Markdown, GitHub
+### Testing Tools
 
-## Goal
-Practice API testing and document results clearly for QA.
+* Postman
+* REST API
+* JSON
+* XML
+* HTTP status codes
+* Request and response validation
+* Equivalence Partitioning
+* Boundary Value Analysis
+* Negative testing
+* Jira
+
+### Test Case Summary
+
+| Result    |  Count |
+| --------- | -----: |
+| **PASS**  | **30** |
+| **FAIL**  | **33** |
+| **Total** | **63** |
+
+---
+
+# 1. Kits API
+
+**Endpoint:** `POST /api/v1/kits/{kitId}/products`
+
+---
+
+## TC-001 — Add an existing product to a kit
+
+**Test Case:** Verify that the user can add an existing product ID to the kit.
+
+**Test Steps:**
+
+1. Send a POST request to `/api/v1/kits/{kitId}/products`.
+2. Use an existing kit ID.
+3. Send an existing product ID and quantity.
+4. Verify the response status.
+5. Verify that the product was added.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Expected Result:**
+
+* Product is added to the kit.
+* Response status is `200 OK`.
+
+**Actual Result:**
+
+* Product was added.
+* Response status was `200 OK`.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-002 — Add a non-existing product ID
+
+**Test Case:** Verify that adding a non-existing product ID returns `400 Bad Request`.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 9999999999,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=7
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* Product was not added.
+* Response status was `500 Internal Server Error`.
+* Response body: `Internal Server Error`.
+
+**Status:** FAIL
+
+**Bug:** KAN-65
+
+---
+
+## TC-003 — Existing product with non-existing kit
+
+**Test Case:** Verify that adding a product to a non-existing kit returns `404 Not Found`.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=1000
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `404 Not Found`.
+
+**Actual Result:**
+
+* Response status was `404 Not Found`.
+* Product was not added.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-004 — String kit ID
+
+**Test Case:** Verify that a non-numeric string used as a kit ID is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=Tp
+```
+
+**Expected Result:**
+
+* Request is rejected.
+* Product is not added.
+* Response status is `404 Not Found`.
+
+**Actual Result:**
+
+* Response status was `500 Internal Server Error`.
+* Product was not added.
+
+**Status:** FAIL
+
+**Bug:** KAN-67
+
+---
+
+## TC-005 — Symbolic kit ID
+
+**Test Case:** Verify that a symbolic value used as a kit ID is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=&%$
+```
+
+**Expected Result:**
+
+* Request is rejected.
+* Product is not added.
+* Expected response: `404 Not Found`.
+
+**Actual Result:**
+
+* Response status was `400 Bad Request`.
+* Product was not added.
+* Response body indicated `400 Bad Request / nginx`.
+
+**Status:** FAIL
+
+**Bug:** KAN-68
+
+---
+
+## TC-006 — Negative kit ID
+
+**Test Case:** Verify that a negative kit ID is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=-79
+```
+
+**Expected Result:**
+
+* Request is rejected.
+* Response status is `404 Not Found`.
+
+**Actual Result:**
+
+```json
+{
+  "code": 404,
+  "message": "Not Found"
+}
+```
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-007 — Decimal kit ID
+
+**Test Case:** Verify that a decimal kit ID is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=5.7
+```
+
+**Expected Result:**
+
+* Request is rejected.
+* Response status is `404 Not Found`.
+
+**Actual Result:**
+
+* Response status was `500 Internal Server Error`.
+* Product was not added.
+
+**Status:** FAIL
+
+**Bug:** KAN-69
+
+---
+
+## TC-008 — Kit ID = 0
+
+**Test Case:** Verify that kit ID `0` is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 3,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=0
+```
+
+**Expected Result:**
+
+* Request is rejected.
+* Response status is `404 Not Found`.
+
+**Actual Result:**
+
+* Response status was `404 Not Found`.
+* Product was not added.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-009 — Null product ID
+
+**Test Case:** Verify that a null product ID returns `400 Bad Request`.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": null,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=4
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* API returned `200 OK`.
+* Quantity was added without a product ID.
+
+**Status:** FAIL
+
+**Bug:** KAN-70
+
+---
+
+## TC-010 — String product ID
+
+**Test Case:** Verify that a string product ID is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": "Mexico",
+      "quantity": 3
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=4
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* Response status was `500 Internal Server Error`.
+* Response body: `Internal Server Error`.
+
+**Status:** FAIL
+
+**Bug:** KAN-71
+
+---
+
+## TC-011 — Decimal quantity
+
+**Test Case:** Verify that a decimal quantity is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 6,
+      "quantity": 3.7
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=4
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* Response status was `500 Internal Server Error`.
+
+```json
+{
+  "code": 500,
+  "message": "invalid input syntax for integer: \"21.7\""
+}
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-73
+
+> **Note:** The request contains `3.7`, while the error message refers to `21.7`.
+
+---
+
+## TC-012 — Negative quantity
+
+**Test Case:** Verify that a negative quantity is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 6,
+      "quantity": -5
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=2
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* API returned `200 OK`.
+* Quantity `-5` was accepted.
+
+**Status:** FAIL
+
+**Bug:** KAN-74
+
+---
+
+## TC-013 — String quantity
+
+**Test Case:** Verify that a string value in the quantity field is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 6,
+      "quantity": "hola"
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* API returned `500 Internal Server Error`.
+
+```json
+{
+  "code": 500,
+  "message": "invalid input syntax for integer: \"10hola\""
+}
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-36
+
+---
+
+## TC-014 — Quantity = 0
+
+**Test Case:** Verify that quantity `0` is rejected.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 6,
+      "quantity": 0
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Expected Result:**
+
+* Product is not added.
+* Response status is `400 Bad Request`.
+
+**Actual Result:**
+
+* API returned `200 OK`.
+* Product was added with quantity `0`.
+
+**Status:** FAIL
+
+**Bug:** KAN-37
+
+---
+
+## TC-015 — Quantity = 1
+
+**Test Case:** Verify that quantity `1` is accepted.
+
+**Test Data:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 6,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`; product was added.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-016 — Add 29 different products
+
+**Test Case:** Verify that 29 different products can be added to a kit.
+
+**Path parameter:**
+
+```text
+kitId=7
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {"id":1,"quantity":1},
+    {"id":2,"quantity":1},
+    {"id":3,"quantity":1},
+    {"id":4,"quantity":1},
+    {"id":5,"quantity":1},
+    {"id":6,"quantity":1},
+    {"id":7,"quantity":1},
+    {"id":8,"quantity":1},
+    {"id":9,"quantity":1},
+    {"id":10,"quantity":1},
+    {"id":11,"quantity":1},
+    {"id":12,"quantity":1},
+    {"id":13,"quantity":1},
+    {"id":14,"quantity":1},
+    {"id":15,"quantity":1},
+    {"id":16,"quantity":1},
+    {"id":17,"quantity":1},
+    {"id":18,"quantity":1},
+    {"id":19,"quantity":1},
+    {"id":20,"quantity":1},
+    {"id":21,"quantity":1},
+    {"id":22,"quantity":1},
+    {"id":23,"quantity":1},
+    {"id":24,"quantity":1},
+    {"id":25,"quantity":1},
+    {"id":26,"quantity":1},
+    {"id":27,"quantity":1},
+    {"id":28,"quantity":1},
+    {"id":29,"quantity":1}
+  ]
+}
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`; all 29 products were accepted.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-017 — Add 30 different products
+
+**Test Case:** Verify that 30 different products can be added to a kit.
+
+**Path parameter:**
+
+```text
+kitId=8
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {"id":1,"quantity":1},
+    {"id":2,"quantity":1},
+    {"id":3,"quantity":1},
+    {"id":4,"quantity":1},
+    {"id":5,"quantity":1},
+    {"id":6,"quantity":1},
+    {"id":7,"quantity":1},
+    {"id":8,"quantity":1},
+    {"id":9,"quantity":1},
+    {"id":10,"quantity":1},
+    {"id":11,"quantity":1},
+    {"id":12,"quantity":1},
+    {"id":13,"quantity":1},
+    {"id":14,"quantity":1},
+    {"id":15,"quantity":1},
+    {"id":16,"quantity":1},
+    {"id":17,"quantity":1},
+    {"id":18,"quantity":1},
+    {"id":19,"quantity":1},
+    {"id":20,"quantity":1},
+    {"id":21,"quantity":1},
+    {"id":22,"quantity":1},
+    {"id":23,"quantity":1},
+    {"id":24,"quantity":1},
+    {"id":25,"quantity":1},
+    {"id":26,"quantity":1},
+    {"id":27,"quantity":1},
+    {"id":28,"quantity":1},
+    {"id":29,"quantity":1},
+    {"id":30,"quantity":1}
+  ]
+}
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`; all 30 products were accepted.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-018 — Add 31 different products
+
+**Test Case:** Verify that adding more than 30 products returns `400 Bad Request`.
+
+**Path parameter:**
+
+```text
+kitId=9
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {"id":1,"quantity":1},
+    {"id":2,"quantity":1},
+    {"id":3,"quantity":1},
+    {"id":4,"quantity":1},
+    {"id":5,"quantity":1},
+    {"id":6,"quantity":1},
+    {"id":7,"quantity":1},
+    {"id":8,"quantity":1},
+    {"id":9,"quantity":1},
+    {"id":10,"quantity":1},
+    {"id":11,"quantity":1},
+    {"id":12,"quantity":1},
+    {"id":13,"quantity":1},
+    {"id":14,"quantity":1},
+    {"id":15,"quantity":1},
+    {"id":16,"quantity":1},
+    {"id":17,"quantity":1},
+    {"id":18,"quantity":1},
+    {"id":19,"quantity":1},
+    {"id":20,"quantity":1},
+    {"id":21,"quantity":1},
+    {"id":22,"quantity":1},
+    {"id":23,"quantity":1},
+    {"id":24,"quantity":1},
+    {"id":25,"quantity":1},
+    {"id":26,"quantity":1},
+    {"id":27,"quantity":1},
+    {"id":28,"quantity":1},
+    {"id":29,"quantity":1},
+    {"id":30,"quantity":1},
+    {"id":31,"quantity":1}
+  ]
+}
+```
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Message: `No more than 30 items per set`
+
+**Actual Result:**
+
+* `400 Bad Request`
+* Same validation message.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-019 — Duplicate product IDs
+
+**Test Case:** Verify that duplicate product IDs are accepted.
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {"id":1,"quantity":1},
+    {"id":1,"quantity":1},
+    {"id":1,"quantity":1},
+    {"id":1,"quantity":1}
+  ]
+}
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+**Bug:** None
+
+---
+
+## TC-020 — Empty productsList
+
+**Test Case:** Verify that an empty `productsList` returns `400 Bad Request`.
+
+**Path parameter:**
+
+```text
+kitId=5
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": []
+}
+```
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Validation error.
+
+**Actual Result:**
+
+* `200 OK`
+* Empty array was accepted.
+
+**Status:** FAIL
+
+**Bug:** KAN-38
+
+---
+
+## TC-021 — Missing product ID
+
+**Test Case:** Verify that a request without a product ID in the `productsList` array triggers `400 Bad Request`.
+
+**Path parameter:**
+
+```text
+kitId=6
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {
+      "quantity": 2
+    },
+    {
+      "quantity": 5
+    }
+  ]
+}
+```
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Validation error indicating that `productId` is required.
+
+**Actual Result:**
+
+* `200 OK`
+* Items without product IDs were accepted.
+
+**Status:** FAIL
+
+**Bug:** KAN-39
+
+---
+
+## TC-022 — Missing quantity
+
+**Test Case:** Verify that a request without quantity returns `400 Bad Request`.
+
+**Path parameter:**
+
+```text
+kitId=4
+```
+
+**Request body:**
+
+```json
+{
+  "productsList": [
+    {
+      "id": 101
+    },
+    {
+      "id": 102
+    }
+  ]
+}
+```
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Validation error indicating that quantity is required.
+
+**Actual Result:**
+
+* `404 Not Found`
+* Container ID was reported as not found.
+
+**Status:** FAIL
+
+**Bug:** KAN-40
+
+---
+
+# 2. Fast Delivery API
+
+**Endpoint:**
+
+```text
+POST /fast-delivery/v3.1.1/calculate-delivery.xml
+```
+
+**Request format:** XML
+
+---
+
+## TC-023 — Valid Fast Delivery request
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>2.3</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `3`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Actual Result:**
+
+* `200 OK`
+* Expected XML response was returned.
+
+**Status:** PASS
+
+---
+
+## TC-024 — Valid Fast Delivery request
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>09</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `6`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Status:** PASS
+
+---
+
+## TC-025 — JSON instead of XML
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Message indicating that XML is expected.
+
+**Actual Result:**
+
+* `500 Internal Server Error`
+* Error: `Non-whitespace before first tag`
+
+**Status:** FAIL
+
+**Bug:** KAN-41
+
+---
+
+## TC-026 — Missing productsCount
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>09</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `500 Internal Server Error`.
+
+**Status:** FAIL
+
+**Bug:** KAN-42
+
+---
+
+## TC-027 — Missing deliveryTime
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.9</productsWeight>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:**
+
+```json
+{
+  "code": 500,
+  "message": "Cannot read properties of undefined (reading '0')"
+}
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-43
+
+---
+
+## TC-028 — Negative deliveryTime
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>-8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:**
+
+* `200 OK`
+* Response did not contain the expected validation error.
+
+**Status:** FAIL
+
+**Bug:** KAN-44
+
+---
+
+## TC-029 — Decimal deliveryTime
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>8.8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-45
+
+---
+
+## TC-030 — String deliveryTime
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>test</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-46
+
+---
+
+## TC-031 — String productsCount
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>test</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-47
+
+---
+
+## TC-032 — Negative productsCount
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>-6</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-48
+
+---
+
+## TC-033 — Decimal productsCount
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6.5</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-48
+
+---
+
+## TC-034 — Decimal productsWeight
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>2.9</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-035 — Negative productsWeight
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>-6</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-49
+
+---
+
+## TC-036 — String productsWeight
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>test</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-50
+
+---
+
+## TC-037 — productsWeight = 0
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>0</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** FAIL
+
+**Bug:** KAN-51
+
+---
+
+## TC-038 — productsWeight = 2.5
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>6</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-039 — productsWeight = 2.7
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>8</productsCount>
+  <productsWeight>2.7</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-040 — productsWeight = 5.9
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>8</productsCount>
+  <productsWeight>5.9</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-041 — productsWeight = 0.1
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>2</productsCount>
+  <productsWeight>0.1</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-042 — productsCount = 9
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>9</productsCount>
+  <productsWeight>0.1</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `200 OK`
+* Delivery possible.
+* Host delivery cost = `6`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Actual Result:** Same expected values.
+
+**Status:** PASS
+
+---
+
+## TC-043 — productsWeight = 2.6 with productsCount 1–7
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>5</productsCount>
+  <productsWeight>2.6</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-044 — productsWeight = 2.5 with productsCount 8–14
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>9</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-045 — productsWeight = 2.6 with productsCount 8–14
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>9</productsCount>
+  <productsWeight>2.6</productsWeight>
+  <deliveryTime>9</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-046 — productsWeight = 6
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>9</productsCount>
+  <productsWeight>6</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-047 — productsWeight = 6.1
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>9</productsCount>
+  <productsWeight>6.1</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `7`
+* Client delivery cost = `9`
+* Delivery time = `25–30 minutes`
+
+**Actual Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `6`
+* Client delivery cost = `6`
+* Delivery time = `25–30 minutes`
+
+**Status:** FAIL
+
+**Bug:** KAN-56
+
+---
+
+## TC-048 — productsCount = 0
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>0</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>8</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-049 — productsCount = 1
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>1</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-050 — productsCount = 7
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-051 — productsCount = 8
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>8</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:** `200 OK`.
+
+**Status:** PASS
+
+---
+
+## TC-052 — productsCount = 15
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>15</productsCount>
+  <productsWeight>2.6</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result recorded in the test:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `7`
+* Client delivery cost = `9`
+* Delivery time = `25–30 minutes`
+
+**Actual Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = true`
+* Host delivery cost = `6`
+* Client delivery cost = `6`
+* Delivery time = `25–30 minutes`
+
+**Status:** FAIL
+
+**Bug:** KAN-60
+
+> **Note:** The original test steps also contained a `400 Bad Request` expectation. The recorded Expected Result above is preserved exactly as provided.
+
+---
+
+## TC-053 — deliveryTime = 0
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>0</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `200 OK`
+* `isItPossibleToDeliver = false`
+* Host delivery cost = `6`
+* Client delivery cost = `0`
+
+**Actual Result:**
+
+```xml
+<response name="Fast Delivery"/>
+```
+
+The expected `isItPossibleToDeliver` value was not returned.
+
+**Status:** FAIL
+
+**Bug:** KAN-76
+
+---
+
+## TC-054 — deliveryTime = 01
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>01</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:**
+
+* `200 OK`
+* `deliveryTime = 01` was accepted.
+
+**Status:** FAIL
+
+**Bug:** KAN-77
+
+---
+
+## TC-055 — deliveryTime = 06
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>06</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `400 Bad Request`.
+
+**Actual Result:**
+
+* `200 OK`
+* `deliveryTime = 06` was accepted.
+
+**Status:** FAIL
+
+**Bug:** KAN-78
+
+---
+
+## TC-056 — deliveryTime = 07
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>07</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:**
+
+* `200 OK`
+* Delivery was possible.
+* Host delivery cost = `3`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Status:** PASS
+
+---
+
+## TC-057 — deliveryTime = 08
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>08</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:**
+
+* `200 OK`
+* Delivery was possible.
+* Host delivery cost = `3`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Status:** PASS
+
+---
+
+## TC-058 — deliveryTime = 20
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>20</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:**
+
+* `200 OK`
+* Delivery was possible.
+* Host delivery cost = `3`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Status:** PASS
+
+---
+
+## TC-059 — deliveryTime = 21
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>21</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:** `200 OK`.
+
+**Actual Result:**
+
+* `200 OK`
+* Delivery was possible.
+* Host delivery cost = `3`
+* Client delivery cost = `0`
+* Delivery time = `25–30 minutes`
+
+**Status:** PASS
+
+> **Note:** One of the original test steps mentioned `deliveryTime = 07`, while the XML request contains `21`.
+
+---
+
+## TC-060 — deliveryTime = 22
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>22</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `400 Bad Request`
+* Delivery time is outside the allowed operating hours.
+
+**Actual Result:**
+
+* `200 OK`
+* `deliveryTime = 22` was accepted.
+
+```xml
+<response name="Fast Delivery"/>
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-62
+
+---
+
+## TC-061 — deliveryTime = 23
+
+**Test Case:** Verify that delivery time `23` is rejected because it is outside operating hours.
+
+**Expected Result:**
+
+* `400 Bad Request`.
+
+**Actual Result:**
+
+* `200 OK`.
+* The API accepted the outside-hours value.
+
+```xml
+<response name="Fast Delivery"/>
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-79
+
+> **Note:** The original request body contains `deliveryTime = 22`, while the test case title and execution notes refer to `23`. This inconsistency is preserved.
+
+---
+
+## TC-062 — deliveryTime = 24
+
+**Request body:**
+
+```xml
+<InputModel>
+  <productsCount>7</productsCount>
+  <productsWeight>2.5</productsWeight>
+  <deliveryTime>24</deliveryTime>
+</InputModel>
+```
+
+**Expected Result:**
+
+* `400 Bad Request`.
+* Delivery time is invalid.
+
+**Actual Result:**
+
+* `200 OK`.
+* `deliveryTime = 24` was accepted.
+
+```xml
+<response name="Fast Delivery"/>
+```
+
+**Status:** FAIL
+
+**Bug:** KAN-80
+
+---
+
+# Bug Report Summary
+
+| Bug ID | Test Case | Issue                                                    |
+| ------ | --------: | -------------------------------------------------------- |
+| KAN-36 |    TC-013 | String quantity causes `500` instead of validation error |
+| KAN-37 |    TC-014 | Quantity `0` is accepted                                 |
+| KAN-38 |    TC-020 | Empty `productsList` is accepted                         |
+| KAN-39 |    TC-021 | Missing product ID is accepted                           |
+| KAN-40 |    TC-022 | Missing quantity scenario returns `404`                  |
+| KAN-41 |    TC-025 | JSON request causes `500` instead of `400`               |
+| KAN-42 |    TC-026 | Missing productsCount causes `500`                       |
+| KAN-43 |    TC-027 | Missing deliveryTime causes `500`                        |
+| KAN-44 |    TC-028 | Negative deliveryTime is accepted                        |
+| KAN-45 |    TC-029 | Decimal deliveryTime is accepted                         |
+| KAN-46 |    TC-030 | String deliveryTime is accepted                          |
+| KAN-47 |    TC-031 | String productsCount is accepted                         |
+| KAN-48 |    TC-032 | Negative productsCount is accepted                       |
+| KAN-48 |    TC-033 | Decimal productsCount is accepted                        |
+| KAN-49 |    TC-035 | Negative productsWeight is accepted                      |
+| KAN-50 |    TC-036 | String productsWeight is accepted                        |
+| KAN-51 |    TC-037 | productsWeight `0` is accepted                           |
+| KAN-56 |    TC-047 | Incorrect delivery pricing for weight `6.1`              |
+| KAN-60 |    TC-052 | Incorrect handling/pricing for productsCount `15`        |
+| KAN-62 |    TC-060 | deliveryTime `22` is accepted                            |
+| KAN-65 |    TC-002 | Non-existing product ID causes `500`                     |
+| KAN-67 |    TC-004 | String kit ID causes `500`                               |
+| KAN-68 |    TC-005 | Symbolic kit ID returns unexpected `400`                 |
+| KAN-69 |    TC-007 | Decimal kit ID causes `500`                              |
+| KAN-70 |    TC-009 | Null product ID is accepted                              |
+| KAN-71 |    TC-010 | String product ID causes `500`                           |
+| KAN-73 |    TC-011 | Decimal quantity causes `500`                            |
+| KAN-74 |    TC-012 | Negative quantity is accepted                            |
+| KAN-76 |    TC-053 | Expected `isItPossibleToDeliver=false` is missing        |
+| KAN-77 |    TC-054 | deliveryTime `01` is accepted                            |
+| KAN-78 |    TC-055 | deliveryTime `06` is accepted                            |
+| KAN-79 |    TC-061 | Outside-hours delivery time is accepted                  |
+| KAN-80 |    TC-062 | deliveryTime `24` is accepted                            |
+
+---
+
+# QA Testing Coverage
+
+This project demonstrates experience with:
+
+* API functional testing
+* Positive testing
+* Negative testing
+* Boundary Value Analysis
+* Equivalence Partitioning
+* Required-field validation
+* Null-value testing
+* Invalid data-type testing
+* Boundary-value testing
+* HTTP status-code validation
+* Response-body validation
+* JSON request validation
+* XML request validation
+* Business-rule validation
+* Delivery pricing validation
+* Operating-hour validation
+* Defect identification
+* Jira bug reporting
+* API error analysis
+
+---
+
+# Final Test Summary
+
+**Total Test Cases:** 63
+
+**Passed:** 30
+
+**Failed:** 33
+
+**Testing Approach:**
+
+The test suite includes positive, negative, boundary, data-type, validation, and business-rule scenarios for both the Kits API and Fast Delivery API.
+
+The testing identified defects involving invalid input validation, incorrect HTTP status codes, missing-field handling, acceptance of invalid values, and incorrect business-rule behavior.
+
+**Tools:** Postman, Jira, REST API, JSON, XML
