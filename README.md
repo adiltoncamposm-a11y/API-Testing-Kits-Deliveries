@@ -25,8 +25,8 @@ This project contains manual API test cases created and executed for two API fea
 | Result    |  Count |
 | --------- | -----: |
 | **PASS**  | **30** |
-| **FAIL**  | **33** |
-| **Total** | **63** |
+| **FAIL**  | **32** |
+| **Total** | **62** |
 
 ---
 
