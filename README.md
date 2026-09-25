@@ -4,9 +4,35 @@
 Manual API testing of the Kits and Deliveries API.
 
 ## Tools
+# API Testing Project – Kits & Fast Delivery
+
+## Project Overview
+
+This project contains manual API test cases created and executed for two API features:
+
+- **Kits API** – adding products to kits
+- **Fast Delivery API** – delivery cost and delivery-time calculation
+
+### Testing Tools
+
 - Postman
+- REST API
+- JSON
+- XML
+- HTTP status codes
+- Request and response validation
+- Equivalence Partitioning
+- Boundary Value Analysis
+- Negative testing
 - Jira
-- GitHub
+
+### Test Case Summary
+
+| Result | Count |
+| --- | --- |
+| **PASS** | **30** |
+| **FAIL** | **32** |
+| **Total** | **62** |
 
 ## Test Coverage
 - Test cases designed: 62
@@ -18,7 +44,7 @@ Manual API testing of the Kits and Deliveries API.
 32 test cases failed during execution. Defects were documented in Jira.
 
 ## Test Cases
-[View all API test cases](test-cases/API-Test-Cases.md)
+[View all API test cases]()
 
 ## Test Results
 The API was tested using positive and negative scenarios, including
