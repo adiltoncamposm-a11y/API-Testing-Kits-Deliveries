@@ -44,7 +44,7 @@ This project contains manual API test cases created and executed for two API fea
 32 test cases failed during execution. Defects were documented in Jira.
 
 ## Test Cases
-[View all API test cases](Test cases)
+[View all API test cases](https://github.com/adiltoncamposm-a11y/API-Testing-Kits-Deliveries/blob/2f23912d3cdb378fe27b3af59151b3370ee41d3a/Test%20cases)
 
 ## Test Results
 The API was tested using positive and negative scenarios, including
